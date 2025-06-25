@@ -37,6 +37,8 @@ export default function App() {
   const [editId, setEditId] = useState(null);
   const [editValue, setEditValue] = useState("");
   const [editMonth, setEditMonth] = useState("");
+  const [expenseFilter, setExpenseFilter] = useState("all");
+  const [incomeFilter, setIncomeFilter] = useState("all");
 
   useEffect(() => {
     const savedExpenses = localStorage.getItem("expenseRecords");
@@ -136,6 +138,14 @@ export default function App() {
     return amount < 0 ? `△¥${Math.abs(amount).toLocaleString()}` : `¥${amount.toLocaleString()}`;
   };
 
+  const filteredExpenseView = filteredExpenseRecords.filter((rec) => {
+    return expenseFilter === "all" || rec.item === Number(expenseFilter);
+  });
+
+  const filteredIncomeView = filteredIncomeRecords.filter((rec) => {
+    return incomeFilter === "all" || rec.item === incomeFilter;
+  });
+
   return (
     <div className="container">
       <h1>収支管理アプリ</h1>
@@ -181,8 +191,15 @@ export default function App() {
           <h3>支出合計: {formatAmount(totalExpense)}</h3>
 
           <h4>入力履歴（{selectedMonth}）</h4>
+          <label>フィルター：</label>
+          <select value={expenseFilter} onChange={(e) => setExpenseFilter(e.target.value)}>
+            <option value="all">すべて表示</option>
+            {expenseItems.map((label, index) => (
+              <option key={index} value={index}>{label}</option>
+            ))}
+          </select>
           <ul>
-            {filteredExpenseRecords.map((rec) => (
+            {filteredExpenseView.map((rec) => (
               <li key={rec.id}>
                 {editId === rec.id ? (
                   <>
@@ -237,8 +254,15 @@ export default function App() {
           <h2>残高: {formatAmount((totalIncome + carriedOver) - totalExpense)}</h2>
 
           <h4>入力履歴（{selectedMonth}）</h4>
+          <label>フィルター：</label>
+          <select value={incomeFilter} onChange={(e) => setIncomeFilter(e.target.value)}>
+            <option value="all">すべて表示</option>
+            {incomeItems.map((item) => (
+              <option key={item.key} value={item.key}>{item.label}</option>
+            ))}
+          </select>
           <ul>
-            {filteredIncomeRecords.map((rec) => (
+            {filteredIncomeView.map((rec) => (
               <li key={rec.id}>
                 {editId === rec.id ? (
                   <>
