@@ -142,10 +142,10 @@ export default function App() {
         <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} />
       </div>
 
-      <div className="tabs">
-        <button onClick={() => setTab("expense")}>支出</button>
-        <button onClick={() => setTab("income")}>収入</button>
-      </div>
+    <div className="tabs">
+  <button onClick={() => setTab("income")}>収入</button>
+  <button onClick={() => setTab("expense")}>支出</button>
+</div>
 
       {tab === "expense" && (
         <div className="expense">
