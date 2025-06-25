@@ -179,9 +179,9 @@ export default function App() {
 
           <h3>支出合計: {formatAmount(totalExpense)}</h3>
 
-          <h4>入力履歴</h4>
+          <h4>入力履歴（{selectedMonth}）</h4>
           <ul>
-            {expenseRecords.map((rec, i) => (
+            {filteredExpenseRecords.map((rec, i) => (
               <li key={i}>
                 {editIndex === i ? (
                   <>
@@ -232,10 +232,12 @@ export default function App() {
           </ul>
 
           <h3>収入合計（A〜G + 繰越）: {formatAmount(totalIncome + carriedOver)}</h3>
+          <h3>支出合計: {formatAmount(totalExpense)}</h3>
+          <h2>残高: {formatAmount((totalIncome + carriedOver) - totalExpense)}</h2>
 
-          <h4>入力履歴</h4>
+          <h4>入力履歴（{selectedMonth}）</h4>
           <ul>
-            {incomeRecords.map((rec, i) => (
+            {filteredIncomeRecords.map((rec, i) => (
               <li key={i}>
                 {editIndex === i ? (
                   <>
