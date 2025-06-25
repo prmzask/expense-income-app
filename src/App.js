@@ -34,7 +34,7 @@ export default function App() {
   const [selectedIncome, setSelectedIncome] = useState("A");
   const [incomeAmount, setIncomeAmount] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("2025-06");
-  const [editIndex, setEditIndex] = useState(null);
+  const [editId, setEditId] = useState(null);
   const [editValue, setEditValue] = useState("");
   const [editMonth, setEditMonth] = useState("");
 
@@ -53,6 +53,7 @@ export default function App() {
   const addExpense = () => {
     if (!expenseAmount || isNaN(expenseAmount)) return;
     const newRecord = {
+      id: crypto.randomUUID(),
       item: selectedExpense,
       amount: Number(expenseAmount),
       date: new Date().toLocaleString(),
@@ -65,6 +66,7 @@ export default function App() {
   const addIncome = () => {
     if (!incomeAmount || isNaN(incomeAmount)) return;
     const newRecord = {
+      id: crypto.randomUUID(),
       item: selectedIncome,
       amount: Number(incomeAmount),
       date: new Date().toLocaleString(),
@@ -74,21 +76,22 @@ export default function App() {
     setIncomeAmount("");
   };
 
-  const deleteRecord = (type, index) => {
+  const deleteRecord = (type, id) => {
     if (type === "expense") {
-      setExpenseRecords(expenseRecords.filter((_, i) => i !== index));
+      setExpenseRecords(expenseRecords.filter((r) => r.id !== id));
     } else {
-      setIncomeRecords(incomeRecords.filter((_, i) => i !== index));
+      setIncomeRecords(incomeRecords.filter((r) => r.id !== id));
     }
   };
 
-  const saveEdit = (type, index) => {
+  const saveEdit = (type) => {
     if (!editValue || isNaN(editValue)) return;
-    const updated = type === "expense" ? [...expenseRecords] : [...incomeRecords];
-    updated[index].amount = Number(editValue);
-    updated[index].month = editMonth;
-    type === "expense" ? setExpenseRecords(updated) : setIncomeRecords(updated);
-    setEditIndex(null);
+    if (type === "expense") {
+      setExpenseRecords(expenseRecords.map(r => r.id === editId ? { ...r, amount: Number(editValue), month: editMonth } : r));
+    } else {
+      setIncomeRecords(incomeRecords.map(r => r.id === editId ? { ...r, amount: Number(editValue), month: editMonth } : r));
+    }
+    setEditId(null);
     setEditValue("");
     setEditMonth("");
   };
@@ -136,16 +139,14 @@ export default function App() {
   return (
     <div className="container">
       <h1>収支管理アプリ</h1>
-
       <div className="month-selector">
         <label>月選択：</label>
         <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} />
       </div>
-
-    <div className="tabs">
-  <button onClick={() => setTab("income")}>収入</button>
-  <button onClick={() => setTab("expense")}>支出</button>
-</div>
+      <div className="tabs">
+        <button className={tab === "income" ? "active" : ""} onClick={() => setTab("income")}>収入</button>
+        <button className={tab === "expense" ? "active" : ""} onClick={() => setTab("expense")}>支出</button>
+      </div>
 
       {tab === "expense" && (
         <div className="expense">
@@ -181,22 +182,22 @@ export default function App() {
 
           <h4>入力履歴（{selectedMonth}）</h4>
           <ul>
-            {filteredExpenseRecords.map((rec, i) => (
-              <li key={i}>
-                {editIndex === i ? (
+            {filteredExpenseRecords.map((rec) => (
+              <li key={rec.id}>
+                {editId === rec.id ? (
                   <>
                     <select value={rec.item} disabled>
                       <option>{expenseItems[rec.item]}</option>
                     </select>
                     <input value={editValue} onChange={(e) => setEditValue(e.target.value)} />
                     <input type="month" value={editMonth} onChange={(e) => setEditMonth(e.target.value)} />
-                    <button onClick={() => saveEdit("expense", i)}>保存</button>
+                    <button onClick={() => saveEdit("expense")}>保存</button>
                   </>
                 ) : (
                   <>
                     {expenseItems[rec.item]} - {formatAmount(rec.amount)} ({rec.date} / {rec.month})
-                    <button onClick={() => { setEditIndex(i); setEditValue(rec.amount); setEditMonth(rec.month); }}>✏️</button>
-                    <button onClick={() => deleteRecord("expense", i)}>🗑</button>
+                    <button onClick={() => { setEditId(rec.id); setEditValue(rec.amount); setEditMonth(rec.month); }}>✏️</button>
+                    <button onClick={() => deleteRecord("expense", rec.id)}>🗑</button>
                   </>
                 )}
               </li>
@@ -237,22 +238,22 @@ export default function App() {
 
           <h4>入力履歴（{selectedMonth}）</h4>
           <ul>
-            {filteredIncomeRecords.map((rec, i) => (
-              <li key={i}>
-                {editIndex === i ? (
+            {filteredIncomeRecords.map((rec) => (
+              <li key={rec.id}>
+                {editId === rec.id ? (
                   <>
                     <select value={rec.item} disabled>
                       <option>{getIncomeLabel(rec.item)}</option>
                     </select>
                     <input value={editValue} onChange={(e) => setEditValue(e.target.value)} />
                     <input type="month" value={editMonth} onChange={(e) => setEditMonth(e.target.value)} />
-                    <button onClick={() => saveEdit("income", i)}>保存</button>
+                    <button onClick={() => saveEdit("income")}>保存</button>
                   </>
                 ) : (
                   <>
                     {getIncomeLabel(rec.item)} - {formatAmount(rec.amount)} ({rec.date} / {rec.month})
-                    <button onClick={() => { setEditIndex(i); setEditValue(rec.amount); setEditMonth(rec.month); }}>✏️</button>
-                    <button onClick={() => deleteRecord("income", i)}>🗑</button>
+                    <button onClick={() => { setEditId(rec.id); setEditValue(rec.amount); setEditMonth(rec.month); }}>✏️</button>
+                    <button onClick={() => deleteRecord("income", rec.id)}>🗑</button>
                   </>
                 )}
               </li>
