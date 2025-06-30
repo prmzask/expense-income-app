@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
+// ...（省略せず再掲）項目の定義
 const expenseItems = [
   "1 教職者謝儀", "2 福利厚生費", "2.2 献身者補助", "3 牧会・伝道費", "4 教育研修費",
   "5 講師謝礼", "6 教会学校・ユースミニストリー費", "7 JEC・聖会分担金", "8 宣教費", "9 教職者住宅維持管理費",
@@ -116,18 +117,25 @@ export default function App() {
   const incomeSetTotal = ["A", "B", "C", "D", "E", "EE"].reduce((sum, key) => sum + incomeSums[key], 0);
   const totalIncome = incomeSetTotal + incomeSums.F + incomeSums.G;
 
-  const getPreviousMonth = (monthStr) => {
+  // ✅ 修正: 累積繰越の取得関数
+  const getCarriedOver = (monthStr) => {
     const [year, month] = monthStr.split("-").map(Number);
-    const date = new Date(year, month - 2);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const currentDate = new Date(year, month - 1);
+
+    const isBeforeSelectedMonth = (recordMonth) => {
+      const [rYear, rMonth] = recordMonth.split("-").map(Number);
+      const recordDate = new Date(rYear, rMonth - 1);
+      return recordDate < currentDate;
+    };
+
+    const pastIncome = incomeRecords.filter(r => isBeforeSelectedMonth(r.month));
+    const pastExpense = expenseRecords.filter(r => isBeforeSelectedMonth(r.month));
+    const totalPastIncome = pastIncome.reduce((sum, r) => sum + r.amount, 0);
+    const totalPastExpense = pastExpense.reduce((sum, r) => sum + r.amount, 0);
+    return totalPastIncome - totalPastExpense;
   };
 
-  const previousMonth = getPreviousMonth(selectedMonth);
-  const prevIncome = incomeRecords.filter(r => r.month === previousMonth);
-  const prevExpense = expenseRecords.filter(r => r.month === previousMonth);
-  const prevIncomeTotal = prevIncome.reduce((sum, r) => sum + r.amount, 0);
-  const prevExpenseTotal = prevExpense.reduce((sum, r) => sum + r.amount, 0);
-  const carriedOver = prevIncomeTotal - prevExpenseTotal;
+  const carriedOver = getCarriedOver(selectedMonth);
 
   const getIncomeLabel = (key) => {
     const found = incomeItems.find(i => i.key === key);
